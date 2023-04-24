@@ -1,0 +1,15 @@
+{
+  "name": "leetcodewebsite",
+  "version": "1.0.0",
+  "description": "Building the working clone similar to leetcode website",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "kaushal kishor",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
