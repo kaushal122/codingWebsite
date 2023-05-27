@@ -18,7 +18,7 @@ const questions=[{
   }]
 }];
 
-
+// this function is defining the authorization middleware...
 const key="Krishna";
 function authenticateToken(req,res,next){
   const token=req.header('Authorization');
@@ -28,6 +28,7 @@ function authenticateToken(req,res,next){
     return res.status(401).send('Unauthorized: Missing Token');
   }
   try{
+    // verifying if token is valid or not...
     const decoded=jwt.verify(tokenParts[1],key);
     console.log(decoded);
     console.log(req.user);
@@ -46,6 +47,7 @@ function authenticateToken(req,res,next){
 const submissions=[];
 app.post('/signup', (req, res) => {
   const { email, password } = req.body;
+  // Creating the token here with help of secret key and jsonwebtoken package...
   const token=jwt.sign({email:email},key);
   users.push({email,password});
   res.status(200).send({
@@ -68,6 +70,7 @@ app.post('/signin',(req,res)=>{
  res.status(401).send("Either password or Email is not correct..");
 });
 
+// this routing can be done only if it gets authenticated by above authenticatetoken middleware function.
 app.get("/questions",authenticateToken,function(req,res){
   res.send(questions);
 });
