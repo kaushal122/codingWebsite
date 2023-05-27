@@ -1,12 +1,14 @@
 const express=require('express');
 const app=express();
-
-const users=[{email:String,
-password:String
+const jwt = require('jsonwebtoken');
+const users=[
+  {
+  email:'',
+password:''
 }];
 
 app.use(express.urlencoded({ extended: true }));
-
+app.use(express.json());
 const questions=[{
   title:"Two States",
   description:"Given an array, get maximum element out of this",
@@ -16,17 +18,46 @@ const questions=[{
   }]
 }];
 
+
+const key="Krishna";
+function authenticateToken(req,res,next){
+  const token=req.header('Authorization');
+  const tokenParts = token.split(' ');
+
+  if(tokenParts[0]!='Bearer' || tokenParts.length !=2){
+    return res.status(401).send('Unauthorized: Missing Token');
+  }
+  try{
+    const decoded=jwt.verify(tokenParts[1],key);
+    console.log(decoded);
+    console.log(req.user);
+    req.user=decoded;
+    next();
+  }
+  catch(error){
+    return res.status(403).send('Forbidden: Invalid Token');
+  }
+
+}
+
+
+
+
 const submissions=[];
 app.post('/signup', (req, res) => {
   const { email, password } = req.body;
+  const token=jwt.sign({email:email},key);
   users.push({email,password});
-
-  res.status(200).send('Sign up successful!');
+  res.status(200).send({
+  message: 'Sign up successful!',
+  users: users,
+  token:token
+});
 });
 
 app.post('/signin',(req,res)=>{
   const {email,password}=req.body;
-  const flag=0;
+  let flag=0;
   for (let i = 0; i < users.length; i++) {
    if (users[i].email === email && users[i].password==password) {
      flag=1;
@@ -37,19 +68,19 @@ app.post('/signin',(req,res)=>{
  res.status(401).send("Either password or Email is not correct..");
 });
 
-app.get("/questions",function(req,res){
+app.get("/questions",authenticateToken,function(req,res){
   res.send(questions);
 });
 
 
-app.post("/submissions",function(req,res){
-const code=req.body;
+app.post("/submissions",authenticateToken,function(req,res){
+let code=req.body.code;
 submissions.push(code);
 const randomNum = Math.floor(Math.random() * 2);
-if(randomNum)
-res.send("Accepted");
-else
-res.send("Rejected");
+res.send({
+  code: code,
+  result: randomNum ? "Accepted" : "Rejected"
+});
 });
 
 
