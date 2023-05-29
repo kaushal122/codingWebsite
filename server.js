@@ -1,6 +1,7 @@
-const express=require('express');
+import express from 'express';
 const app=express();
-const jwt = require('jsonwebtoken');
+import jsonwebtoken from 'jsonwebtoken';
+const jwt = jsonwebtoken;
 const users=[
   {
   email:'',
@@ -31,7 +32,6 @@ function authenticateToken(req,res,next){
     // verifying if token is valid or not...
     const decoded=jwt.verify(tokenParts[1],key);
     console.log(decoded);
-    console.log(req.user);
     req.user=decoded;
     next();
   }
@@ -75,15 +75,35 @@ app.get("/questions",authenticateToken,function(req,res){
   res.send(questions);
 });
 
+app.get("/submissions/:title",authenticateToken,(req,res)=>{
+  const pTitle=req.params.title;
+  console.log(pTitle);
+  console.log(req.user.email);
+  let mail=req.user.email;
+  const submission=submissions.filter(x=>x.title==pTitle && x.email==mail);
+  res.json({
+    submission,
+  })
+})
 
 app.post("/submissions",authenticateToken,function(req,res){
 let code=req.body.code;
-submissions.push(code);
+let title=req.body.title;
 const randomNum = Math.floor(Math.random() * 2);
-res.send({
-  code: code,
-  result: randomNum ? "Accepted" : "Rejected"
-});
+if(randomNum){
+  submissions.push({
+    code,
+    title,
+    email:req.user.email,
+    status:"AC"
+  })
+  res.json({
+    status:"AC",
+  })
+}
+else{
+  res.send("NAC");
+}
 });
 
 
